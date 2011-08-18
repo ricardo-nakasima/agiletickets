@@ -38,28 +38,36 @@ public class EspetaculosController {
 		this.result = result;
 	}
 
-	@Get @Path("/espetaculos")
-	public List<Espetaculo> lista() {
+	@Get
+	@Path("/espetaculos")
+	public List<Espetaculo> listarEspetaculos() {
 		result.include("estabelecimentos", estabelecimentos.todos());
 		return agenda.espetaculos();
 	}
 
-	@Post @Path("/espetaculos")
-	public void adiciona(Espetaculo espetaculo) {
-		if (Strings.isNullOrEmpty(espetaculo.getNome())) {
-			validator.add(new ValidationMessage("Nome do espet√°culo n√£o pode estar em branco", ""));
-		}
-		if (Strings.isNullOrEmpty(espetaculo.getDescricao())) {
-			validator.add(new ValidationMessage("Descri√ß√£o do espet√°culo n√£o pode estar em branco", ""));
-		}
-		validator.onErrorRedirectTo(this).lista();
+	@Post
+	@Path("/espetaculos")
+	public void adicionarEspetaculo(Espetaculo espetaculo) {
+		validarString(espetaculo.getNome(), "Nome do espet·culo n„o pode estar em branco");
+		validarString(espetaculo.getDescricao(), "DescriÁ„o do espet·culo n„o pode estar em branco");
+		validator.onErrorRedirectTo(this).listarEspetaculos();
 
 		agenda.cadastra(espetaculo);
-		result.redirectTo(this).lista();
+		result.redirectTo(this).listarEspetaculos();
 	}
 
+	private void validarCondicao(boolean condicao, String mensagem) {
+		if (condicao) {
+			validator.add(new ValidationMessage(mensagem, ""));
+		}
+	}
+	
+	private void validarString(String textoParaValidar, String mensagem) {
+		validarCondicao(Strings.isNullOrEmpty(textoParaValidar), mensagem);
+	}
 
-	@Get @Path("/sessao/{id}")
+	@Get
+	@Path("/sessao/{id}")
 	public void sessao(Long id) {
 		Sessao sessao = agenda.sessao(id);
 		if (sessao == null) {
@@ -69,55 +77,46 @@ public class EspetaculosController {
 		result.include("sessao", sessao);
 	}
 
-	@Post @Path("/sessao/{sessaoId}/reserva")
-	public void reserva(Long sessaoId, final Integer quantidade) {
+	@Post
+	@Path("/sessao/{sessaoId}/reserva")
+	public void reservar(Long sessaoId, final Integer quantidadeDeLugares) {
 		Sessao sessao = agenda.sessao(sessaoId);
 		if (sessao == null) {
 			result.notFound();
 			return;
 		}
-
-		if (quantidade < 1) {
-			validator.add(new ValidationMessage("Voc√™ deve escolher um lugar ou mais", ""));
-		}
-
-		if (!sessao.podeReservar(quantidade)) {
-			validator.add(new ValidationMessage("N√£o existem ingressos dispon√≠veis", ""));
-		}
-
+		validarCondicao(quantidadeDeLugares < 1, "VocÍ deve escolher um lugar ou mais");
+		validarCondicao(!sessao.podeReservar(quantidadeDeLugares), "N„o existem ingressos disponÌveis");
 		validator.onErrorRedirectTo(this).sessao(sessao.getId());
 
-		sessao.reserva(quantidade);
+		sessao.reserva(quantidadeDeLugares);
 		result.include("message", "Sessao reservada com sucesso");
-
 		result.redirectTo(IndexController.class).index();
 	}
 
-	@Get @Path("/espetaculo/{espetaculoId}/sessoes")
+	@Get
+	@Path("/espetaculo/{espetaculoId}/sessoes")
 	public void sessoes(Long espetaculoId) {
-		Espetaculo espetaculo = carregaEspetaculo(espetaculoId);
-
+		Espetaculo espetaculo = buscarEspetaculo(espetaculoId);
 		result.include("espetaculo", espetaculo);
 	}
 
+	@Post
+	@Path("/espetaculo/{espetaculoId}/sessoes")
+	public void cadastrarSessoes(Long espetaculoId, LocalDate dataInicio, LocalDate dataFinal, LocalTime horario, Periodicidade periodicidade) {
+		Espetaculo espetaculo = buscarEspetaculo(espetaculoId);
 
-	@Post @Path("/espetaculo/{espetaculoId}/sessoes")
-	public void cadastraSessoes(Long espetaculoId, LocalDate inicio, LocalDate fim, LocalTime horario, Periodicidade periodicidade) {
-		Espetaculo espetaculo = carregaEspetaculo(espetaculoId);
-
-		List<Sessao> sessoes = espetaculo.criaSessoes(inicio, fim, horario, periodicidade);
+		List<Sessao> sessoes = espetaculo.criaSessoes(dataInicio, dataFinal, horario, periodicidade);
 
 		agenda.agende(sessoes);
 
 		result.include("message", sessoes.size() + " sessoes criadas com sucesso");
-		result.redirectTo(this).lista();
+		result.redirectTo(this).listarEspetaculos();
 	}
 
-	private Espetaculo carregaEspetaculo(Long espetaculoId) {
+	private Espetaculo buscarEspetaculo(Long espetaculoId) {
 		Espetaculo espetaculo = agenda.espetaculo(espetaculoId);
-		if (espetaculo == null) {
-			validator.add(new ValidationMessage("", ""));
-		}
+		validarCondicao(espetaculo == null, "");
 		validator.onErrorUse(status()).notFound();
 		return espetaculo;
 	}
