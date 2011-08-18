@@ -40,7 +40,7 @@ public class EspetaculosController {
 
 	@Get
 	@Path("/espetaculos")
-	public List<Espetaculo> listarEspetaculos() {
+	public List<Espetaculo> lista() {
 		result.include("estabelecimentos", estabelecimentos.todos());
 		return agenda.espetaculos();
 	}
@@ -50,10 +50,10 @@ public class EspetaculosController {
 	public void adicionarEspetaculo(Espetaculo espetaculo) {
 		validarString(espetaculo.getNome(), "Nome do espetáculo não pode estar em branco");
 		validarString(espetaculo.getDescricao(), "Descrição do espetáculo não pode estar em branco");
-		validator.onErrorRedirectTo(this).listarEspetaculos();
+		validator.onErrorRedirectTo(this).lista();
 
 		agenda.cadastra(espetaculo);
-		result.redirectTo(this).listarEspetaculos();
+		result.redirectTo(this).lista();
 	}
 
 	private void validarCondicao(boolean condicao, String mensagem) {
@@ -103,7 +103,7 @@ public class EspetaculosController {
 
 	@Post
 	@Path("/espetaculo/{espetaculoId}/sessoes")
-	public void cadastrarSessoes(Long espetaculoId, LocalDate dataInicio, LocalDate dataFinal, LocalTime horario, Periodicidade periodicidade) {
+	public void cadastraSessoes(Long espetaculoId, LocalDate dataInicio, LocalDate dataFinal, LocalTime horario, Periodicidade periodicidade) {
 		Espetaculo espetaculo = buscarEspetaculo(espetaculoId);
 
 		List<Sessao> sessoes = espetaculo.criaSessoes(dataInicio, dataFinal, horario, periodicidade);
@@ -111,7 +111,7 @@ public class EspetaculosController {
 		agenda.agende(sessoes);
 
 		result.include("message", sessoes.size() + " sessoes criadas com sucesso");
-		result.redirectTo(this).listarEspetaculos();
+		result.redirectTo(this).lista();
 	}
 
 	private Espetaculo buscarEspetaculo(Long espetaculoId) {
