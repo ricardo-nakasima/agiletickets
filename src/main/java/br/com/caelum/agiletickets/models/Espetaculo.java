@@ -87,6 +87,11 @@ public class Espetaculo {
 	}
 
 	public List<Sessao> criaSessoes(LocalDate inicio, LocalDate fim, LocalTime horario, Periodicidade periodicidade) {
+		/*if (fim.isBefore(inicio)) {
+			LocalDate Aux = fim;
+			fim = inicio;
+			inicio = Aux;
+		}*/
 		int diasNoIntervalo = Days.daysBetween(inicio, fim).getDays();
 		List<Sessao> sessoes = newArrayList();
 		for(int i = 0; i<=diasNoIntervalo; i++) {
