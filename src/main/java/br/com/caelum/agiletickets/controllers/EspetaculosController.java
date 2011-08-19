@@ -95,8 +95,6 @@ public class EspetaculosController {
 		validator.onErrorRedirectTo(this).sessao(sessao.getId());
 
 		sessao.reserva(quantidade);
-		//result.include("message", "Sessao reservada com sucesso");
-
 		BigDecimal precoTotal = sessao.getPreco().multiply(BigDecimal.valueOf(quantidade));
 
 		result.include("message", "Sessao reservada com sucesso por " + CURRENCY.format(precoTotal));
