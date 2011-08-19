@@ -79,17 +79,17 @@ public class EspetaculosController {
 
 	@Post
 	@Path("/sessao/{sessaoId}/reserva")
-	public void reservar(Long sessaoId, final Integer quantidadeDeLugares) {
+	public void reservar(Long sessaoId, final Integer quantidade) {
 		Sessao sessao = agenda.sessao(sessaoId);
 		if (sessao == null) {
 			result.notFound();
 			return;
 		}
-		validarCondicao(quantidadeDeLugares < 1, "Você deve escolher um lugar ou mais");
-		validarCondicao(!sessao.podeReservar(quantidadeDeLugares), "Não existem ingressos disponíveis");
+		validarCondicao(quantidade < 1, "Você deve escolher um lugar ou mais");
+		validarCondicao(!sessao.podeReservar(quantidade), "Não existem ingressos disponíveis");
 		validator.onErrorRedirectTo(this).sessao(sessao.getId());
 
-		sessao.reserva(quantidadeDeLugares);
+		sessao.reserva(quantidade);
 		result.include("message", "Sessao reservada com sucesso");
 		result.redirectTo(IndexController.class).index();
 	}
