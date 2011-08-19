@@ -6,6 +6,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
+import java.math.BigDecimal;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -102,6 +104,7 @@ public class EspetaculosControllerTest {
 	public void deveReservarSeASessaoTemIngressosSuficientes() throws Exception {
 		Sessao sessao = new Sessao();
 		sessao.setTotalIngressos(5);
+		sessao.setPreco(new BigDecimal(1));
 
 		when(agenda.sessao(1234l)).thenReturn(sessao);
 
